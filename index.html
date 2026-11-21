@@ -1,5 +1,5 @@
 <title>Sketch Me</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap">
 
@@ -104,12 +104,13 @@
   }
 
 .subtitle {
-  font-size: 1rem;           /* was 0.95rem */
+  font-size: 30px;           /* was 0.95rem */
   color: var(--fg);          /* was var(--muted) — now fully visible */
   opacity: 0.85;             /* slight softening without losing readability */
-  max-width: 440px;
+  max-width: 800px;
   margin: 0 auto 1rem;
   line-height: 1.75;
+  font-weight: 100;
 }
 
 .body-note {
@@ -349,8 +350,9 @@
   /* Improve paragraph readability on mobile screens */
 @media (max-width: 600px) {
   .subtitle {
-    font-size: 15px;
+    font-size: 75px;
     padding: 0 4px;
+    font-weight: 100;
   }
 
   .body-note {
