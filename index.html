@@ -1,0 +1,1046 @@
+<title>Sketch Me</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap">
+
+<style>
+  /* ── Token system ──────────────────────────────────────────────────────── */
+  :root {
+    --bg:          #0d0d10;
+    --bg2:         #16151c;
+    --surface:     #1e1c27;
+    --border:      rgba(255,255,255,0.08);
+    --fg:          #e8e4f0;
+    --muted:       #7a7490;
+    --accent:      #c9b8f0;
+    --accent-dim:  #7c6ab0;
+    --stroke-col:  #e2d8f8;
+    color-scheme: dark;
+
+    --ff-display: 'Playfair Display', Georgia, serif;
+    --ff-body:    'DM Sans', system-ui, sans-serif;
+  }
+
+  /* Light mode */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:         #f5f3f9;
+      --bg2:        #edeaf5;
+      --surface:    #ffffff;
+      --border:     rgba(0,0,0,0.08);
+      --fg:         #1a1826;
+      --muted:      #8882a4;
+      --accent:     #5d44a8;
+      --accent-dim: #9880d4;
+      --stroke-col: #2a1f5e;
+      color-scheme: light;
+    }
+  }
+
+  :root[data-theme="light"] {
+    --bg:         #f5f3f9;
+    --bg2:        #edeaf5;
+    --surface:    #ffffff;
+    --border:     rgba(0,0,0,0.08);
+    --fg:         #1a1826;
+    --muted:      #8882a4;
+    --accent:     #5d44a8;
+    --accent-dim: #9880d4;
+    --stroke-col: #2a1f5e;
+    color-scheme: light;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--ff-body);
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+  }
+
+  /* ── Header ────────────────────────────────────────────────────────────── */
+  header {
+    width: 100%;
+    max-width: 760px;
+    padding-block: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-family: var(--ff-body);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: var(--ff-display);
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.1;
+    text-wrap: balance;
+    color: var(--fg);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+.subtitle {
+  font-size: 1rem;           /* was 0.95rem */
+  color: var(--fg);          /* was var(--muted) — now fully visible */
+  opacity: 0.85;             /* slight softening without losing readability */
+  max-width: 440px;
+  margin: 0 auto 1rem;
+  line-height: 1.75;
+}
+
+.body-note {
+  font-size: 0.9rem;
+  color: var(--fg);
+  opacity: 0.75;
+  max-width: 540px;
+  margin: 0.75rem auto 0;
+  line-height: 1.7;
+  text-align: center;
+}
+
+  /* ── Upload zone ───────────────────────────────────────────────────────── */
+  .upload-zone {
+    width: 100%;
+    max-width: 760px;
+    margin-block: 2rem;
+  }
+
+  .drop-area {
+    border: 1.5px dashed var(--accent-dim);
+    border-radius: 16px;
+    background: var(--bg2);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .drop-area:hover,
+  .drop-area.drag-over {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .drop-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+    opacity: 0.6;
+  }
+
+  .drop-label {
+    font-size: 1rem;
+    color: var(--fg);
+    margin-bottom: 0.4rem;
+  }
+
+  .drop-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* ── Settings row ──────────────────────────────────────────────────────── */
+  .settings {
+    width: 100%;
+    max-width: 760px;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+
+  .setting-group {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .setting-group label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .setting-group input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .setting-group select {
+    width: 100%;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--ff-body);
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .val-display {
+    font-size: 0.75rem;
+    color: var(--accent);
+    float: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Buttons ───────────────────────────────────────────────────────────── */
+  .btn-row {
+    width: 100%;
+    max-width: 760px;
+    display: none;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    font-family: var(--ff-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0d10;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+
+  /* ── Canvas area ───────────────────────────────────────────────────────── */
+  .canvas-wrap {
+    width: 100%;
+    max-width: 900px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .canvas-container {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0a090f;
+    position: relative;
+    box-shadow: 0 8px 60px rgba(0,0,0,0.5);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Hidden preview canvas */
+  #srcCanvas {
+    display: none;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.1s;
+    border-radius: 2px;
+  }
+
+  .status-line {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+    min-height: 1.2em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Footer ─────────────────────────────────────────────────────────────── */
+  footer {
+    margin-top: auto;
+    padding-block: 2rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── Reduced motion ─────────────────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar {
+      transition: none;
+    }
+  }
+  
+  /* Improve paragraph readability on mobile screens */
+@media (max-width: 600px) {
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 4px;
+  }
+
+  .body-note {
+    font-size: 0.88rem;
+    padding: 0 4px;
+  }
+}
+</style>
+
+<!-- Hidden canvas for image processing -->
+<canvas id="srcCanvas"></canvas>
+
+<header>
+  <p class="eyebrow">Apki Apni Drawing Machine !!</p>
+  <h1>Watch your photo<br><em>come to life</em></h1>
+  <p class="subtitle">
+    Kya hua Sanu agar mai acha drawing artist nahi hu mera laptop toh bana hi sakta hai 😂😂😂... Baby I am sorry aap gusse mai so gaye, Mai sachme pyaar se baat kar raha tha but it was just that ki mai apne keywords use nahi kar paa raha tha.. 
+    But anyway aapko jab bhi lage ki mai nahi pyaar se baat kar raha hu yaa apko meri yaad aaye toh meine apke liye ye banaya hai and ye bade pyaar se bana hai babyy .. not an excuse but a genuine apology!! 
+    I love you my lovee.
+  </p>
+  <p class="body-note">
+    Mai apko best settings bata deta hu, edge threshold jitna kam rakhoge utni zyada detailed banegi picture but bohot kam rakhne se bohot cluttered lagegi, and drawing speed bhi aap apne hissab se rakh sakte ho isme kuch nahi hai just normal strokes ki speed.
+  </p>
+</header>
+
+<div class="upload-zone" id="uploadZone">
+  <div class="drop-area" id="dropArea">
+    <input type="file" id="fileInput" accept="image/*">
+    <span class="drop-icon">🖼️</span>
+    <p class="drop-label">Drop your photo here</p>
+    <p class="drop-hint">or click to browse — JPG, PNG, WEBP</p>
+  </div>
+</div>
+
+<div class="settings" id="settingsRow">
+  <div class="setting-group">
+    <label>
+      Edge threshold
+      <span class="val-display" id="threshVal">65</span>
+    </label>
+    <input type="range" id="threshSlider" min="20" max="200" value="65">
+  </div>
+
+  <div class="setting-group">
+    <label>
+      Drawing speed
+      <span class="val-display" id="speedVal">2</span>
+    </label>
+    <input type="range" id="speedSlider" min="1" max="20" value="2">
+  </div>
+
+  <div class="setting-group">
+    <label>Stroke style</label>
+    <select id="styleSelect">
+      <option value="light">Pencil on dark</option>
+      <option value="dark">Ink on paper</option>
+      <option value="gold">Gold leaf</option>
+      <option value="rose">Rose sketch</option>
+    </select>
+  </div>
+</div>
+
+<div class="btn-row" id="btnRow">
+  <button class="btn btn-primary" id="drawBtn">▶ Start Drawing</button>
+  <button class="btn btn-secondary" id="pauseBtn" disabled>⏸ Pause</button>
+  <button class="btn btn-secondary" id="saveBtn" disabled>↓ Save</button>
+  <button class="btn btn-secondary" id="resetBtn">↺ New Image</button>
+</div>
+
+<div class="canvas-wrap" id="canvasWrap">
+  <div class="canvas-container">
+    <canvas id="drawCanvas"></canvas>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <p class="status-line" id="statusLine">Ready to draw</p>
+</div>
+
+<footer>
+  Images never leave your device · Pure browser processing
+</footer>
+
+<script>
+  // ── Palette themes ──────────────────────────────────────────────────────
+  const THEMES = {
+    light: { bg: '#0d0d10', stroke: '#e2d8f8' },
+    dark:  { bg: '#f0ede8', stroke: '#1a1626' },
+    gold:  { bg: '#0c0a04', stroke: '#d4a853' },
+    rose:  { bg: '#0e080c', stroke: '#f0a0b8' },
+  };
+
+  // ── DOM references ───────────────────────────────────────────────────────
+  const fileInput    = document.getElementById('fileInput');
+  const dropArea     = document.getElementById('dropArea');
+  const uploadZone   = document.getElementById('uploadZone');
+  const settingsRow  = document.getElementById('settingsRow');
+  const btnRow       = document.getElementById('btnRow');
+  const canvasWrap   = document.getElementById('canvasWrap');
+  const drawCanvas   = document.getElementById('drawCanvas');
+  const srcCanvas    = document.getElementById('srcCanvas');
+  const progressBar  = document.getElementById('progressBar');
+  const statusLine   = document.getElementById('statusLine');
+  const drawBtn      = document.getElementById('drawBtn');
+  const pauseBtn     = document.getElementById('pauseBtn');
+  const saveBtn      = document.getElementById('saveBtn');
+  const resetBtn     = document.getElementById('resetBtn');
+  const threshSlider = document.getElementById('threshSlider');
+  const speedSlider  = document.getElementById('speedSlider');
+  const styleSelect  = document.getElementById('styleSelect');
+  const threshVal    = document.getElementById('threshVal');
+  const speedVal     = document.getElementById('speedVal');
+
+  const dctx = drawCanvas.getContext('2d');
+  const sctx = srcCanvas.getContext('2d', {
+    willReadFrequently: true
+  });
+
+  // ── Application state ────────────────────────────────────────────────────
+  let contours    = [];
+  let segIdx      = 0;
+  let ptIdx       = 0;
+  let animId      = null;
+  let paused      = false;
+  let done        = false;
+  let totalSegs   = 0;
+  let segsDrawn   = 0;
+  let loadedImage = null;
+
+  // ── Slider labels ────────────────────────────────────────────────────────
+  threshSlider.addEventListener('input', () => {
+    threshVal.textContent = threshSlider.value;
+  });
+
+  speedSlider.addEventListener('input', () => {
+    speedVal.textContent = speedSlider.value;
+  });
+
+  // ── Drag and drop ────────────────────────────────────────────────────────
+  dropArea.addEventListener('dragover', event => {
+    event.preventDefault();
+    dropArea.classList.add('drag-over');
+  });
+
+  dropArea.addEventListener('dragleave', () => {
+    dropArea.classList.remove('drag-over');
+  });
+
+  dropArea.addEventListener('drop', event => {
+    event.preventDefault();
+    dropArea.classList.remove('drag-over');
+
+    const file = event.dataTransfer.files[0];
+
+    if (file && file.type.startsWith('image/')) {
+      loadFile(file);
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) {
+      loadFile(fileInput.files[0]);
+    }
+  });
+
+  // ── Load uploaded image ──────────────────────────────────────────────────
+  function loadFile(file) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      loadedImage = img;
+      URL.revokeObjectURL(url);
+      showUI();
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      statusLine.textContent =
+        'This image could not be opened. Try a JPG or PNG file.';
+
+      console.error('Image loading failed:', file.name);
+    };
+
+    img.src = url;
+  }
+
+  // ── Show application controls ────────────────────────────────────────────
+  function showUI() {
+    uploadZone.style.display = 'none';
+    settingsRow.style.display = 'flex';
+    btnRow.style.display = 'flex';
+    canvasWrap.style.display = 'flex';
+
+    prepareCanvas();
+  }
+
+  // ── Canvas sizing ────────────────────────────────────────────────────────
+  const MAX_W = 860;
+  const MAX_H = 640;
+
+  function prepareCanvas() {
+    const img = loadedImage;
+
+    const scale = Math.min(
+      MAX_W / img.width,
+      MAX_H / img.height,
+      1
+    );
+
+    const W = Math.round(img.width * scale);
+    const H = Math.round(img.height * scale);
+
+    srcCanvas.width = W;
+    srcCanvas.height = H;
+
+    drawCanvas.width = W;
+    drawCanvas.height = H;
+
+    // Draw the uploaded image on the hidden processing canvas.
+    sctx.drawImage(img, 0, 0, W, H);
+
+    // Paint the background according to the selected theme.
+    const theme = THEMES[styleSelect.value] || THEMES.light;
+
+    dctx.fillStyle = theme.bg;
+    dctx.fillRect(0, 0, W, H);
+
+    statusLine.textContent = 'Ready — hit Start Drawing';
+    progressBar.style.width = '0%';
+
+    saveBtn.disabled = true;
+    pauseBtn.disabled = true;
+    drawBtn.disabled = false;
+    drawBtn.textContent = '▶ Start Drawing';
+
+    done = false;
+    paused = false;
+
+    if (animId) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    }
+
+    contours = [];
+    segIdx = 0;
+    ptIdx = 0;
+    segsDrawn = 0;
+    totalSegs = 0;
+  }
+
+  // ── Sobel edge detection ─────────────────────────────────────────────────
+  // Converts the uploaded image to grayscale, applies a small blur, and
+  // measures brightness changes with the Sobel operator.
+  function detectEdges(threshold) {
+    const W = srcCanvas.width;
+    const H = srcCanvas.height;
+
+    const src = sctx.getImageData(0, 0, W, H).data;
+
+    const gray = new Float32Array(W * H);
+
+    // Convert every pixel to grayscale.
+    for (let i = 0, p = 0; i < src.length; i += 4, p++) {
+      gray[p] =
+        0.299 * src[i] +
+        0.587 * src[i + 1] +
+        0.114 * src[i + 2];
+    }
+
+    // Apply a 3x3 blur to reduce tiny noisy edges.
+    const blurred = new Float32Array(W * H);
+
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        let sum = 0;
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            sum += gray[(y + dy) * W + (x + dx)];
+          }
+        }
+
+        blurred[y * W + x] = sum / 9;
+      }
+    }
+
+    const magnitude = new Float32Array(W * H);
+    let maxMagnitude = 0;
+
+    // Calculate the Sobel gradient for each pixel.
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const gx =
+          -blurred[(y - 1) * W + (x - 1)] +
+          blurred[(y - 1) * W + (x + 1)] -
+          2 * blurred[y * W + (x - 1)] +
+          2 * blurred[y * W + (x + 1)] -
+          blurred[(y + 1) * W + (x - 1)] +
+          blurred[(y + 1) * W + (x + 1)];
+
+        const gy =
+          -blurred[(y - 1) * W + (x - 1)] -
+          2 * blurred[(y - 1) * W + x] -
+          blurred[(y - 1) * W + (x + 1)] +
+          blurred[(y + 1) * W + (x - 1)] +
+          2 * blurred[(y + 1) * W + x] +
+          blurred[(y + 1) * W + (x + 1)];
+
+        const value = Math.hypot(gx, gy);
+
+        magnitude[y * W + x] = value;
+
+        if (value > maxMagnitude) {
+          maxMagnitude = value;
+        }
+      }
+    }
+
+    const edgeMap = new Uint8Array(W * H);
+
+    // A lower threshold keeps more useful edges in the final sketch.
+    // This replaces the older, overly aggressive threshold calculation.
+    const normalizedThreshold = Math.max(
+      1,
+      (threshold / 500) * maxMagnitude
+    );
+
+    let edgeCount = 0;
+
+    // Mark pixels whose gradient is strong enough to be an edge.
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const index = y * W + x;
+
+        if (magnitude[index] >= normalizedThreshold) {
+          edgeMap[index] = 1;
+          edgeCount++;
+        }
+      }
+    }
+
+    return {
+      edgeMap,
+      W,
+      H,
+      edgeCount
+    };
+  }
+
+  // ── Group neighbouring edge pixels ──────────────────────────────────────
+  // Instead of greedily walking a contour (which can get stuck at branches),
+  // this finds every connected group of edge pixels with a breadth-first
+  // search. The animation draws the pixels themselves, so no edge is lost
+  // because a path could not be followed.
+  function traceContours(edgeMap, W, H) {
+    const visited = new Uint8Array(W * H);
+    const result = [];
+
+    const directions = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+      [1, 1],
+      [-1, 1],
+      [1, -1],
+      [-1, -1]
+    ];
+
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const startIndex = y * W + x;
+
+        if (!edgeMap[startIndex] || visited[startIndex]) {
+          continue;
+        }
+
+        const component = [];
+        const queue = [startIndex];
+
+        let head = 0;
+
+        visited[startIndex] = 1;
+
+        // Explore all connected neighbouring edge pixels.
+        while (head < queue.length) {
+          const index = queue[head++];
+
+          const px = index % W;
+          const py = Math.floor(index / W);
+
+          component.push([px, py]);
+
+          for (const [dx, dy] of directions) {
+            const nx = px + dx;
+            const ny = py + dy;
+
+            if (
+              nx <= 0 ||
+              ny <= 0 ||
+              nx >= W - 1 ||
+              ny >= H - 1
+            ) {
+              continue;
+            }
+
+            const nextIndex = ny * W + nx;
+
+            if (edgeMap[nextIndex] && !visited[nextIndex]) {
+              visited[nextIndex] = 1;
+              queue.push(nextIndex);
+            }
+          }
+        }
+
+        // Ignore isolated single pixels, but retain short useful details.
+        if (component.length >= 2) {
+          result.push(component);
+        }
+      }
+    }
+
+    // Draw larger connected shapes first.
+    result.sort((a, b) => b.length - a.length);
+
+    return result;
+  }
+
+  // ── Build drawing ────────────────────────────────────────────────────────
+  function build() {
+    const threshold = Number(threshSlider.value);
+
+    statusLine.textContent = 'Detecting edges…';
+    drawBtn.disabled = true;
+
+    // Give the browser time to display the status message.
+    setTimeout(() => {
+      try {
+        const {
+          edgeMap,
+          W,
+          H,
+          edgeCount
+        } = detectEdges(threshold);
+
+        console.log('Image dimensions:', W, 'x', H);
+        console.log('Detected edge pixels:', edgeCount);
+
+        statusLine.textContent = 'Grouping edge pixels…';
+
+        setTimeout(() => {
+          try {
+            contours = traceContours(edgeMap, W, H);
+
+            totalSegs = contours.reduce(
+              (sum, group) => sum + group.length,
+              0
+            );
+
+            segIdx = 0;
+            ptIdx = 0;
+            segsDrawn = 0;
+
+            console.log('Connected edge groups:', contours.length);
+            console.log('Pixels to draw:', totalSegs);
+
+            if (totalSegs === 0) {
+              statusLine.textContent =
+                'No edges found. Try lowering the edge threshold or using another image.';
+
+              drawBtn.disabled = false;
+              pauseBtn.disabled = true;
+
+              return;
+            }
+
+            statusLine.textContent =
+              `${contours.length} groups found · ${totalSegs.toLocaleString()} points`;
+
+            animate();
+
+          } catch (error) {
+            console.error('Edge grouping failed:', error);
+
+            statusLine.textContent =
+              'Could not process this image. Check the console.';
+
+            drawBtn.disabled = false;
+            pauseBtn.disabled = true;
+          }
+        }, 20);
+
+      } catch (error) {
+        console.error('Edge detection failed:', error);
+
+        statusLine.textContent =
+          'Could not detect edges. Check the console for details.';
+
+        drawBtn.disabled = false;
+        pauseBtn.disabled = true;
+      }
+    }, 20);
+  }
+
+  // ── Animation loop ───────────────────────────────────────────────────────
+  function animate() {
+    if (paused) {
+      return;
+    }
+
+    const speed = Number(speedSlider.value);
+    const theme = THEMES[styleSelect.value] || THEMES.light;
+
+    dctx.fillStyle = theme.stroke;
+    dctx.globalAlpha = 0.95;
+
+    // Keep the animation deliberately slow:
+    // At speed 1, draw just one edge point per frame.
+    // On a 60 Hz screen, this is approximately 60 points per second.
+    // Higher slider values gradually increase the number of points drawn.
+    const pointsPerFrame = speed;
+
+    for (let count = 0; count < pointsPerFrame; count++) {
+
+      // Stop when all edge groups have been drawn.
+      if (segIdx >= contours.length) {
+        done = true;
+        animId = null;
+
+        dctx.globalAlpha = 1;
+
+        statusLine.textContent =
+          `Done · ${totalSegs.toLocaleString()} points drawn`;
+
+        progressBar.style.width = '100%';
+
+        saveBtn.disabled = false;
+        pauseBtn.disabled = true;
+        drawBtn.disabled = false;
+
+        drawBtn.textContent = '↺ Redraw';
+
+        return;
+      }
+
+      const component = contours[segIdx];
+
+      // Move to the next group when the current one is complete.
+      if (ptIdx >= component.length) {
+        segIdx++;
+        ptIdx = 0;
+        continue;
+      }
+
+      const [x, y] = component[ptIdx];
+
+      // Paint a tiny round mark for each detected edge pixel.
+      // This avoids connecting unrelated pixels with incorrect lines.
+      dctx.beginPath();
+      dctx.arc(x, y, 0.75, 0, Math.PI * 2);
+      dctx.fill();
+
+      ptIdx++;
+      segsDrawn++;
+    }
+
+    dctx.globalAlpha = 1;
+
+    // Update progress.
+    const percent = totalSegs
+      ? (segsDrawn / totalSegs) * 100
+      : 0;
+
+    progressBar.style.width = percent.toFixed(1) + '%';
+
+    statusLine.textContent =
+      `Drawing… ${Math.round(percent)}%`;
+
+    // Continue drawing on the next browser frame.
+    animId = requestAnimationFrame(animate);
+  }
+
+  // ── Button handlers ──────────────────────────────────────────────────────
+
+  // Start drawing or redraw the image.
+  drawBtn.addEventListener('click', () => {
+
+    if (done) {
+      // Prepare the canvas again for a fresh drawing.
+      prepareCanvas();
+      return;
+    }
+
+    if (animId) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    }
+
+    paused = false;
+
+    pauseBtn.disabled = false;
+    drawBtn.disabled = true;
+
+    pauseBtn.textContent = '⏸ Pause';
+
+    // Repaint the background for the selected style.
+    const theme = THEMES[styleSelect.value] || THEMES.light;
+
+    dctx.fillStyle = theme.bg;
+    dctx.fillRect(
+      0,
+      0,
+      drawCanvas.width,
+      drawCanvas.height
+    );
+
+    build();
+  });
+
+  // Pause or resume the animation.
+  pauseBtn.addEventListener('click', () => {
+    if (done) {
+      return;
+    }
+
+    paused = !paused;
+
+    pauseBtn.textContent = paused
+      ? '▶ Resume'
+      : '⏸ Pause';
+
+    if (!paused) {
+      animate();
+    }
+  });
+
+  // Save the finished sketch as a PNG image.
+  saveBtn.addEventListener('click', () => {
+
+    drawCanvas.toBlob(blob => {
+
+      if (!blob) {
+        statusLine.textContent = 'Could not save the image.';
+        return;
+      }
+
+      const a = document.createElement('a');
+
+      a.href = URL.createObjectURL(blob);
+      a.download = 'sketch.png';
+
+      a.click();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(a.href);
+      }, 1000);
+
+    }, 'image/png');
+  });
+
+  // Reset the application and upload another image.
+  resetBtn.addEventListener('click', () => {
+
+    if (animId) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    }
+
+    uploadZone.style.display = '';
+    settingsRow.style.display = 'none';
+    btnRow.style.display = 'none';
+    canvasWrap.style.display = 'none';
+
+    fileInput.value = '';
+
+    loadedImage = null;
+    contours = [];
+
+    done = false;
+    paused = false;
+
+    segIdx = 0;
+    ptIdx = 0;
+
+    totalSegs = 0;
+    segsDrawn = 0;
+
+    animId = null;
+  });
+</script>
